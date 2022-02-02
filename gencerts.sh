@@ -4,10 +4,13 @@ DEST="$PWD/certs"
 
 # Set default values for expiry and ssl key size
 export CA_EXPIRE="${CA_EXPIRE:-10000}"
+export CA_SUBJECT="${CA_SUBJECT:-Test CA}"
+
+export CERTNAME="${CERTNAME:-server}"
+
 export SSL_EXPIRE="${SSL_EXPIRE:-3650}"
 export SSL_SIZE="${SSL_SIZE:-4096}"
 export SILENT="${SILENT:-}"
-export CERTNAME="${CERTNAME:-server}"
 
 usage () {
   echo "Usage: gencerts.sh [-s 'host.example.com' ] [-i 127.0.0.1,192.168.1.10] [-n host.example.com,host]"
@@ -70,5 +73,4 @@ then
     -e SSL_DNS \
     -e SSL_SUBJECT \
     paulczar/omgwtfssl
-    #bash:latest env |grep SSL
 fi
