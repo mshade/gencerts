@@ -1,18 +1,18 @@
 #!/usr/bin/env bash
 
 DEST="$PWD/certs"
-SERVER_PREFIX="server"
-CLIENT_PREFIX="client"
 
 # Set default values for expiry and ssl key size
 export CA_EXPIRE="${CA_EXPIRE:-10000}"
 export SSL_EXPIRE="${SSL_EXPIRE:-3650}"
 export SSL_SIZE="${SSL_SIZE:-4096}"
 export SILENT="${SILENT:-}"
+export CERTNAME="${CERTNAME:-server}"
 
 usage () {
   echo "Usage: gencerts.sh [-s 'host.example.com' ] [-i 127.0.0.1,192.168.1.10] [-n host.example.com,host]"
   echo "May also set one or more of SSL_SUBJECT, SSL_IP, or SSL_DNS env vars"
+  echo "Set CERTNAME to override the default server.pem cert name, and generate multiples for example."
   echo "Optional: CA_EXPIRE, CA_SUBJECT, SSL_EXPIRE, SSL_SIZE, SILENT"
 }
 
@@ -54,20 +54,18 @@ then
     -e SSL_SIZE \
     -e CA_EXPIRE \
     -e CA_SUBJECT \
-    -e SSL_CERT=/certs/"${CLIENT_PREFIX}".pem \
-    -e SSL_KEY=/certs/"${CLIENT_PREFIX}".key \
     paulczar/omgwtfssl
 fi
 
 # Create Server cert/key
-if [[ ! -f "${DEST}"/"${SERVER_PREFIX}".pem ]]
+if [[ ! -f "${DEST}"/"${CERTNAME}".pem ]]
 then
   docker run --rm -v "${DEST}":/certs \
     -e SILENT \
     -e SSL_SIZE \
     -e SSL_EXPIRE \
-    -e SSL_CERT=/certs/"${SERVER_PREFIX}".pem \
-    -e SSL_KEY=/certs/"${SERVER_PREFIX}".key \
+    -e SSL_CERT=/certs/"${CERTNAME}".pem \
+    -e SSL_KEY=/certs/"${CERTNAME}".key \
     -e SSL_IP \
     -e SSL_DNS \
     -e SSL_SUBJECT \
