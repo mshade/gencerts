@@ -24,7 +24,7 @@ SSL_SIZE=4096    # Key size for generated certs (CA and Server)
 SILENT=1         # Silence output - otherwise, cert data is printed to stdout
 ```
 
-Inspect generaed certs with `openssl`:
+Inspect generated certs with `openssl`:
 
 ```
 openssl x509 -in certs/server.pem -text -noout
