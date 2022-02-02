@@ -17,11 +17,11 @@ Basic Usage: gencerts.sh [-s 'host.example.com' ] [-i 127.0.0.1,192.168.1.10] [-
 CA_EXPIRE=1000  # Expiry of CA cert
 CA_SUBJECT=ExampleCA # Name of CA Issuer
 
-CERTNAME=server  # Prefix for server certificate to generate
+CERTNAME=server  # Prefix for server certificate to generate, ie server.pem, server.key
 
 SSL_EXPIRE=3650  # Expiry of Server Cert
 SSL_SIZE=4096    # Key size for generated certs (CA and Server)
-SILENT=1 .       # Silence output - otherwise, cert data is printed to stdout
+SILENT=1         # Silence output - otherwise, cert data is printed to stdout
 ```
 
 Inspect generaed certs with `openssl`:
