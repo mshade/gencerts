@@ -4,20 +4,28 @@ DEST="$PWD/certs"
 SERVER_PREFIX="server"
 CLIENT_PREFIX="client"
 
-usage() {
+# Set default values for expiry and ssl key size
+export CA_EXPIRE="${CA_EXPIRE:-10000}"
+export SSL_EXPIRE="${SSL_EXPIRE:-3650}"
+export SSL_SIZE="${SSL_SIZE:-4096}"
+export SILENT="${SILENT:-}"
+
+usage () {
   echo "Usage: gencerts.sh [-s 'host.example.com' ] [-i 127.0.0.1,192.168.1.10] [-n host.example.com,host]"
+  echo "May also set one or more of SSL_SUBJECT, SSL_IP, or SSL_DNS env vars"
+  echo "Optional: CA_EXPIRE, CA_SUBJECT, SSL_EXPIRE, SSL_SIZE, SILENT"
 }
 
 while getopts "s:i:n:" opt; do
   case ${opt} in
     s )
-      SUBJECT=${OPTARG}
+      export SSL_SUBJECT=${OPTARG}
       ;;
     i ) 
-      IPS=${OPTARG}
+      export SSL_IP=${OPTARG}
       ;;
     n )
-      HOSTNAMES=${OPTARG}
+      export SSL_DNS=${OPTARG}
       ;;
     \? )
       usage
@@ -26,39 +34,43 @@ while getopts "s:i:n:" opt; do
   esac
 done
 
-echo "Hostnames: $HOSTNAMES"
-echo "Subject: $SUBJECT"
-echo "IPs: $IPS"
+if [ -z "$SSL_SUBJECT" ] && [ -z "$SSL_IP" ] && [ -z "$SSL_DNS" ]; then
+  usage
+  exit 1
+fi
+
+env |grep "^CA_"
+env | grep "^SSL_"
+echo 
 
 test -d "${DEST}" || mkdir -p "${DEST}"
 
-COMMON_OPTS="-e CA_EXPIRE=10000 -e SSL_EXPIRE=10000 -e SSL_SIZE=4096"
 
 # Create CA, client cert/key
-if [[ ! -f "${DEST}"/"${CLIENT_PREFIX}"-cert.pem ]]
+if [[ ! -f "${DEST}"/ca-key.pem ]]
 then
   docker run --rm -v "${DEST}":/certs \
-    ${COMMON_OPTS} \
-    -e SSL_CERT=/certs/"${CLIENT_PREFIX}"-cert.pem \
+    -e SILENT \
+    -e SSL_SIZE \
+    -e CA_EXPIRE \
+    -e CA_SUBJECT \
+    -e SSL_CERT=/certs/"${CLIENT_PREFIX}".pem \
     -e SSL_KEY=/certs/"${CLIENT_PREFIX}".key \
-    superseb/omgwtfssl
+    paulczar/omgwtfssl
 fi
 
 # Create Server cert/key
-if [[ ! -f "${DEST}"/"${SERVER_PREFIX}"-cert.pem ]]
+if [[ ! -f "${DEST}"/"${SERVER_PREFIX}".pem ]]
 then
-  test -z "${SUBJECT}" && \
-    read -rp "Provide Primary hostname / Subject to add to cert." SUBJECT
-  test -z "${IPS}" && \
-    read -rp "Provide comma separated IPs to add to cert." IPS
-  test -z "${HOSTNAMES}" && \
-    read -rp "Provide comma separated SAN Hostnames to add to cert." HOSTNAMES
   docker run --rm -v "${DEST}":/certs \
-    ${COMMON_OPTS} \
-    -e SSL_SUBJECT="${SUBJECT}" \
-    -e SSL_CERT=/certs/"${SERVER_PREFIX}"-cert.pem \
+    -e SILENT \
+    -e SSL_SIZE \
+    -e SSL_EXPIRE \
+    -e SSL_CERT=/certs/"${SERVER_PREFIX}".pem \
     -e SSL_KEY=/certs/"${SERVER_PREFIX}".key \
-    -e SSL_DNS="${HOSTNAMES}" \
-    superseb/omgwtfssl
+    -e SSL_IP \
+    -e SSL_DNS \
+    -e SSL_SUBJECT \
+    paulczar/omgwtfssl
+    #bash:latest env |grep SSL
 fi
-
