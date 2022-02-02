@@ -6,8 +6,9 @@ Uses [paulczar/omgwtfssl](https://github.com/superseb/omgwtfssl)'s docker image 
 ## Usage
 
 `gencerts.sh` will create a CA keypair and a server keypair without any options supplied. If a CA keypair already exists as `ca-key.pem` and `ca.pem`, they will be reused.
+See [upstream project for full documentation on options](https://github.com/superseb/omgwtfssl)
 
-Set opions via cli or environmen variable:
+Set options via cli or environment variable:
 
 ```
 Basic Usage: gencerts.sh [-s 'host.example.com' ] [-i 127.0.0.1,192.168.1.10] [-n host.example.com,host]
@@ -23,3 +24,8 @@ SSL_SIZE=4096    # Key size for generated certs (CA and Server)
 SILENT=1 .       # Silence output - otherwise, cert data is printed to stdout
 ```
 
+Inspect generaed certs with `openssl`:
+
+```
+openssl x509 -in certs/server.pem -text -noout
+```
